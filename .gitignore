@@ -1,0 +1,36 @@
+# Archivos y carpetas de ROS 2
+build/
+install/
+log/
+
+# Python / Conda
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.env
+.envrc
+.venv/
+.conda/
+*.conda
+*.env
+
+# Entornos conda (evita subir el entorno completo)
+env/
+ros2_jazzy_env/
+
+# VSCode
+.vscode/
+
+# Archivos temporales
+*.swp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Archivos de colcon
+.colcon*
+
+# Archivos del sistema
+.idea/
