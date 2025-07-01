@@ -1,31 +1,41 @@
 #!/bin/bash
 set -e
 
-# Instalar Miniconda si no está presente (opcional)
-if ! command -v conda &> /dev/null; then
-  echo "Miniconda no está instalado. Instálalo primero desde https://docs.conda.io/en/latest/miniconda.html"
-  exit 1
+# Verifica si ROS ya está instalado
+if [ -d "/opt/ros/jazzy" ]; then
+    echo "ROS 2 Jazzy ya está instalado."
+    exit 0
 fi
 
-# Crear entorno conda desde archivo YAML
-conda env create -f environment.yaml
+echo "Instalando ROS 2 Jazzy para Ubuntu 24.04..."
 
-# Activar entorno
-echo "Para activar el entorno usa:"
-echo "conda activate ros2_jazzy_env"
+# Configurar repositorio
+sudo apt update && sudo apt install -y software-properties-common curl gnupg lsb-release
 
-# Instalar ROS 2 Jazzy fuera del entorno conda (solo si no está instalado)
-read -p "¿Deseas instalar ROS 2 Jazzy ahora? [s/N] " install_ros
-if [[ "$install_ros" =~ ^[Ss]$ ]]; then
-  sudo apt update && sudo apt install curl gnupg lsb-release -y
-  sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo tee /usr/share/keyrings/ros-archive-keyring.gpg > /dev/null
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-  sudo apt update
-  sudo apt install ros-jazzy-desktop -y
+# Añadir clave GPG de ROS correctamente
+echo "➤ Añadiendo clave GPG para ROS..."
+curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc \
+| gpg --dearmor \
+| sudo tee /usr/share/keyrings/ros-archive-keyring.gpg > /dev/null
 
-  # Configura el entorno
-  echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
-  source ~/.bashrc
-  sudo rosdep init || true
-  rosdep update
-fi
+# Añadir el repositorio de ROS 2 para Ubuntu 24.04 (Noble)
+echo "➤ Añadiendo repositorio de ROS 2 Jazzy..."
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+http://packages.ros.org/ros2/ubuntu noble main" \
+| sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+
+# Instalar ROS 2
+sudo apt update
+sudo apt install -y ros-jazzy-desktop
+
+# Configurar entorno para ROS
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+source /opt/ros/jazzy/setup.bash
+
+# Inicializar rosdep
+sudo apt install -y python3-rosdep
+sudo rosdep init || true
+rosdep update
+
+echo "✅ ROS 2 Jazzy instalado correctamente."
